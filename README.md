@@ -13,18 +13,31 @@ By providing a visualized waveform comparison, users can easily analyze whether 
 Currently, the software supports testing for the following effects:
 
 -AINR (AI Noise Reduction)
-
 -Compressor
-
 -Limiter  
 
 <br>
 <br>
     
-## Installation
+## How to use
 
-1.Navigate to the Releases page.  
+1. Launch the Application
+Double-click Mic_Effect_Tester.exe to start the program.
 
-2.Download the latest Mic.Effect.Tester.exe.  
+2. Select Input Device
+Click "Select Input Endpoint" and double-click the microphone device you wish to test from the drop-down menu.
 
-3.Run the application (no installation required).
+3. Select Output Device
+Click "Select Output Endpoint" and double-click the device you want to use for audio playback from the drop-down menu.
+
+4. Choose Effect Function
+Click the button for the specific function you want to test (AINR, Limiter, or Compressor) to open its settings window.
+
+5. Record First Segment
+Click "Start" to begin recording the first audio segment. A prompt window will appear once playback is finished.
+
+6. Toggle Effect and Record Second Segment
+Switch the effect setting on your physical microphone (or software toggle), then click "OK" in the prompt window to proceed with the second recording.
+
+7. Compare Results
+Analyze the visual waveforms of the recorded tracks to verify whether the effect has been successfully applied.
