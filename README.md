@@ -13,6 +13,9 @@ Currently, the software supports testing for the following effects:
 -Limiter
 
 Installation
+
 1.Navigate to the Releases page.
+
 2.Download the latest Mic.Effect.Tester.exe.
+
 3.Run the application (no installation required).
