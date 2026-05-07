@@ -37,7 +37,7 @@ Click the button for the specific function you want to test (AINR, Limiter, or C
 Click "Start" to begin recording the first audio segment. A prompt window will appear once playback is finished.
 
 **6. Toggle Effect and Record Second Segment**<br>
-Switch the effect setting on your physical microphone (or software toggle), then click "OK" in the prompt window to proceed with the second recording.
+Switch the effect setting on  software toggle, then click "OK" in the prompt window to proceed with the second recording.
 
 **7. Compare Results**<br>
 Analyze the visual waveforms of the recorded tracks to verify whether the effect has been successfully applied.
