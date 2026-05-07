@@ -22,22 +22,22 @@ Currently, the software supports testing for the following effects:
 ## How to use
 
 1. Launch the Application
-Double-click Mic_Effect_Tester.exe to start the program.
+   Double-click Mic_Effect_Tester.exe to start the program.
 
-2. Select Input Device
+3. Select Input Device
 Click "Select Input Endpoint" and double-click the microphone device you wish to test from the drop-down menu.
 
-3. Select Output Device
+4. Select Output Device
 Click "Select Output Endpoint" and double-click the device you want to use for audio playback from the drop-down menu.
 
-4. Choose Effect Function
+5. Choose Effect Function
 Click the button for the specific function you want to test (AINR, Limiter, or Compressor) to open its settings window.
 
-5. Record First Segment
+6. Record First Segment
 Click "Start" to begin recording the first audio segment. A prompt window will appear once playback is finished.
 
-6. Toggle Effect and Record Second Segment
+7. Toggle Effect and Record Second Segment
 Switch the effect setting on your physical microphone (or software toggle), then click "OK" in the prompt window to proceed with the second recording.
 
-7. Compare Results
+8. Compare Results
 Analyze the visual waveforms of the recorded tracks to verify whether the effect has been successfully applied.
