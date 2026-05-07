@@ -12,6 +12,7 @@ Currently, the software supports testing for the following effects:
 
 -Limiter
 
+
 Installation
 
 1.Navigate to the Releases page.
