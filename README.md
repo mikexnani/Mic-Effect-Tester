@@ -11,6 +11,7 @@ By providing a visualized waveform comparison, users can easily analyze whether 
 <img width="60%" alt="image" src="https://github.com/user-attachments/assets/cf021172-f847-4755-99cb-b2215d0e61d3" />
 
 <br>
+<br>
 
 <img width="50%" alt="image" src="https://github.com/user-attachments/assets/13309e1b-5c1a-485f-ae58-50f56382c77b" />
 
