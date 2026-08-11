@@ -3,6 +3,7 @@
 ## Overview  
 
 This tool is designed to verify the effectiveness of various microphone effects by simultaneously playing and recording audio through user-defined input and output endpoints.   
+<br>
 By providing a visualized waveform comparison, users can easily analyze whether specific audio processing effects are active and functioning as expected.
 
   <br>
