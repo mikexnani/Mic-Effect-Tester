@@ -30,11 +30,11 @@ Added:
 - output volume adjustment to minimize testing bias from low volume.
 
 Fixed:
-Fix issue where progress persists when restarting a canceled recording.
+- Fix issue where progress persists when restarting a canceled recording.
 
 
 ### v1.0.0
-- Initial release.
+Initial release.
 </details>
 
 <br>
