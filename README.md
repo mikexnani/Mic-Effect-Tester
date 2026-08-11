@@ -20,6 +20,20 @@ Currently, the software supports testing for the following effects:
 
 <br>
 <br>
+
+## Changelog
+<details>
+<summary>Click to expand version history</summary>
+
+### v1.1.0
+- Added support for custom audio output routing.
+
+### v1.0.0
+- Initial release.
+</details>
+
+<br>
+<br>
     
 ## How to use
 
