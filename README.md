@@ -13,7 +13,9 @@ By providing a visualized waveform comparison, users can easily analyze whether 
 Currently, the software supports testing for the following effects:
 
 -AINR (AI Noise Reduction)
+
 -Compressor
+
 -Limiter  
 
 <br>
