@@ -26,7 +26,12 @@ Currently, the software supports testing for the following effects:
 <summary>Click to expand version history</summary>
 
 ### v1.1.0
-- Added support for custom audio output routing.
+Added:
+- output volume adjustment to minimize testing bias from low volume.
+
+Fixed:
+Fix issue where progress persists when restarting a canceled recording.
+
 
 ### v1.0.0
 - Initial release.
