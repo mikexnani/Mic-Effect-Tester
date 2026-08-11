@@ -25,7 +25,7 @@ Currently, the software supports testing for the following effects:
 <details>
 <summary>Click to expand version history</summary>
 
-### v1.1.0
+### v1.0.1
 Added:
 - output volume adjustment to minimize testing bias from low volume.
 
