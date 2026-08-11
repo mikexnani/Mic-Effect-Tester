@@ -32,11 +32,13 @@ Added:
 Fixed:
 - Fix issue where progress persists when restarting a canceled recording.
 
+<br>
 
 ### v1.0.0
 Initial release.
 </details>
 
+<br>
 <br>
 <br>
     
