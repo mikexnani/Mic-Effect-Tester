@@ -1,6 +1,6 @@
-# Mic-Effect-Tester
+# **Mic-Effect-Tester**
 
-## Overview  
+## **Overview**  
 
 This tool is designed to verify the effectiveness of various microphone effects by simultaneously playing and recording audio through user-defined input and output endpoints.   
 <br>
@@ -18,33 +18,33 @@ By providing a visualized waveform comparison, users can easily analyze whether 
   <br>
   <br>
   
-## Features  
+## **Features**  
 
 Currently, the software supports testing for the following effects:
 
--AINR (AI Noise Reduction)
+**-AINR (AI Noise Reduction)**
 
--Compressor
+**-Compressor**
 
--Limiter  
+**-Limiter**  
 
 <br>
 <br>
 
-## Changelog
+## **Changelog**
 <details>
 <summary>Click to expand version history</summary>
 
-### v1.0.1
-Added:
+### **v1.0.1**
+**Added:**
 - output volume adjustment to minimize testing bias from low volume.
 
-Fixed:
+**Fixed:**
 - Fix issue where progress persists when restarting a canceled recording.
 
 <br>
 
-### v1.0.0
+### **v1.0.0**
 Initial release.
 </details>
 
@@ -52,7 +52,7 @@ Initial release.
 <br>
 <br>
     
-## How to use
+## **How to use**
 
 **1. Launch the Application**<br>
 Double-click Mic_Effect_Tester.exe to start the program.
