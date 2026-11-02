@@ -167,42 +167,42 @@ class AudioEngine:
         self.test_audio_data = None
         self.playback_index = 0
 
-    def stop_all_streams(self, session_token=None):  # 停止並關閉目前所有的串流與線程
+    def stop_all_streams(self, session_token=None): # 停止並關閉目前所有的串流與線程
+        should_stop = False
+
         with self.lock:
             if session_token is not None and self._active_test_id != session_token:
                 return
 
             self._active_test_id = None
             self.finished = True
-
-            if self.playback_thread and self.playback_thread.is_alive():
-                try:
-                    self.playback_thread.join(timeout=0.5)
-                except Exception as e:
-                    print(f"[Warning] Playback thread join timed out: {e}")
-            self.playback_thread = None
-
-            if self.input_stream:
-                try:
-                    self.input_stream.stop()
-                    self.input_stream.close()
-                except Exception as e:
-                    print(f"[Warning] Failed to close input stream: {e}")
-                self.input_stream = None
-
-            if self.output_stream:
-                try:
-                    self.output_stream.stop()
-                    self.output_stream.close()
-                except Exception as e:
-                    print(f"[Warning] Failed to close output stream: {e}")
-                self.output_stream = None
-
             self.test_audio_data = None
             self.playback_index = 0
             self.level_queue.clear()
             self.audio_buffer.clear()
-            time.sleep(0.15)
+            should_stop = True
+
+        if self.playback_thread and self.playback_thread.is_alive():
+            try:
+                self.playback_thread.join(timeout=0.5)
+            except Exception:
+                pass
+
+        if self.input_stream:
+            try:
+                self.input_stream.stop()
+                self.input_stream.close()
+            except Exception:
+                pass
+            self.input_stream = None
+
+        if self.output_stream:
+            try:
+                self.output_stream.stop()
+                self.output_stream.close()
+            except Exception:
+                pass
+            self.output_stream = None
 
     def start_dual_test(self, input_device_id, output_device_id, audio_data, channels, session_token=None):
         test_id = session_token or uuid.uuid4().hex
