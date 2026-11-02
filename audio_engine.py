@@ -1,13 +1,15 @@
+# audio_engine.py
 import threading
 import time
 import traceback
+import uuid
 from collections import deque
+
 import numpy as np
 import sounddevice as sd
 
 
 class AudioEngine:
-
     def __init__(self):
         self.input_stream = None
         self.output_stream = None
@@ -23,6 +25,8 @@ class AudioEngine:
 
         self.volume_multiplier = 1.0
 
+        self._active_test_id = None
+
     @staticmethod
     def clean_name(name): #清理特殊符號
         return (
@@ -33,7 +37,7 @@ class AudioEngine:
             .strip()
         )
 
-    def get_devices(self): #列出系統 WASAPI 音訊端點
+    def get_devices(self): # 列出系統 WASAPI 音訊端點
         try:
             devices = sd.query_devices()
             hostapis = sd.query_hostapis()
@@ -54,10 +58,7 @@ class AudioEngine:
 
                 name = self.clean_name(dev["name"])
 
-                if (
-                    dev["max_output_channels"] > 2
-                    or dev["max_input_channels"] > 2
-                ):
+                if dev["max_output_channels"] > 2 or dev["max_input_channels"] > 2:
                     continue
 
                 if name in seen_names:
@@ -99,9 +100,7 @@ class AudioEngine:
                 if max_input > 0 and not any(d["name"] == name for d in inputs):
                     inputs.append({"id": i, "name": name})
 
-                if max_output > 0 and not any(
-                    d["name"] == name for d in outputs
-                ):
+                if max_output > 0 and not any(d["name"] == name for d in outputs):
                     outputs.append({"id": i, "name": name})
 
             return inputs, outputs
@@ -109,7 +108,7 @@ class AudioEngine:
             print(f"[Error] Failed to get sounddevice endpoints: {e}")
             return [], []
 
-    def start_input_meter(self, device_id, callback): #啟動輸入端音量監測
+    def start_input_meter(self, device_id, callback): # 啟動輸入端音量監測
         self.stop_all_streams()
         self.noise_floor = None
 
@@ -160,93 +159,108 @@ class AudioEngine:
             print(f"[Error] Failed to start input meter: {e}")
             self.input_stream = None
 
-    def stop_all_streams(self): # 停止並關閉目前所有的串流與線程
-        self.finished = True
-        time.sleep(0.05)
-
-        if self.playback_thread and self.playback_thread.is_alive():
-            try:
-                self.playback_thread.join(timeout=0.5)
-            except Exception as e:
-                print(f"[Warning] Playback thread join timed out: {e}")
-        self.playback_thread = None
-
-        if self.input_stream:
-            try:
-                self.input_stream.stop()
-                self.input_stream.close()
-            except Exception as e:
-                print(f"[Warning] Failed to close input stream: {e}")
-            self.input_stream = None
-
-        if self.output_stream:
-            try:
-                self.output_stream.stop()
-                self.output_stream.close()
-            except Exception as e:
-                print(f"[Warning] Failed to close output stream: {e}")
-            self.output_stream = None
-
-        self.test_audio_data = None
-        self.playback_index = 0
-        self.level_queue.clear()
-        self.audio_buffer.clear()
-        time.sleep(0.2)
-
-    def start_dual_test(
-        self, input_device_id, output_device_id, audio_data, channels ): # 執行播放與錄音測試
-        self.stop_all_streams()
-        time.sleep(0.3)
-
+    def _reset_runtime_state(self):
         self.finished = False
         self.noise_floor = None
         self.level_queue.clear()
         self.audio_buffer.clear()
-        self.playback_index = 0
         self.test_audio_data = None
+        self.playback_index = 0
+
+    def stop_all_streams(self, session_token=None):  # 停止並關閉目前所有的串流與線程
+        with self.lock:
+            if session_token is not None and self._active_test_id != session_token:
+                return
+
+            self._active_test_id = None
+            self.finished = True
+
+            if self.playback_thread and self.playback_thread.is_alive():
+                try:
+                    self.playback_thread.join(timeout=0.5)
+                except Exception as e:
+                    print(f"[Warning] Playback thread join timed out: {e}")
+            self.playback_thread = None
+
+            if self.input_stream:
+                try:
+                    self.input_stream.stop()
+                    self.input_stream.close()
+                except Exception as e:
+                    print(f"[Warning] Failed to close input stream: {e}")
+                self.input_stream = None
+
+            if self.output_stream:
+                try:
+                    self.output_stream.stop()
+                    self.output_stream.close()
+                except Exception as e:
+                    print(f"[Warning] Failed to close output stream: {e}")
+                self.output_stream = None
+
+            self.test_audio_data = None
+            self.playback_index = 0
+            self.level_queue.clear()
+            self.audio_buffer.clear()
+            time.sleep(0.15)
+
+    def start_dual_test(self, input_device_id, output_device_id, audio_data, channels, session_token=None):
+        test_id = session_token or uuid.uuid4().hex
+
+        with self.lock:
+            self._active_test_id = test_id
+            self.finished = False
+            self.noise_floor = None
+            self.level_queue.clear()
+            self.audio_buffer.clear()
+            self.playback_index = 0
+            self.test_audio_data = None
 
         audio_array = (
-            np.frombuffer(audio_data, dtype=np.int16).astype(np.float32)
-            / 32768.0
+            np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
         )
 
         if audio_array.size == 0:
-            self.finished = True
+            with self.lock:
+                self.finished = True
             return
 
         if audio_array.ndim > 1:
             audio_array = audio_array.mean(axis=1)
 
-        self.test_audio_data = audio_array
-        self.playback_index = 0
+        with self.lock:
+            self.test_audio_data = audio_array
+            self.playback_index = 0
 
         try:
-
             def output_callback(outdata, frames, time_info, status):
                 try:
                     if status:
                         print(f"[Warning] Output status: {status}")
 
-                    if (
-                        self.test_audio_data is None
-                        or self.playback_index >= len(self.test_audio_data)
-                    ):
-                        outdata.fill(0)
-                        return
+                    with self.lock:
+                        if self._active_test_id != test_id:
+                            outdata.fill(0)
+                            return
 
-                    frames_to_copy = min(
-                        frames, len(self.test_audio_data) - self.playback_index
-                    )
+                        if self.test_audio_data is None or self.playback_index >= len(self.test_audio_data):
+                            outdata.fill(0)
+                            return
+
+                        data = self.test_audio_data
+                        index = self.playback_index
+
+                    frames_to_copy = min(frames, len(data) - index)
 
                     if frames_to_copy > 0:
-                        chunk = self.test_audio_data[
-                            self.playback_index : self.playback_index
-                            + frames_to_copy
-                        ]
+                        chunk = data[index:index + frames_to_copy]
                         chunk = chunk * self.volume_multiplier
                         chunk = np.clip(chunk, -1.0, 1.0)
                         outdata[:frames_to_copy, 0] = chunk
-                        self.playback_index += frames_to_copy
+
+                        with self.lock:
+                            if self._active_test_id == test_id:
+                                self.playback_index += frames_to_copy
 
                     if frames_to_copy < frames:
                         outdata[frames_to_copy:, 0] = 0
@@ -263,10 +277,16 @@ class AudioEngine:
                     if indata is None or len(indata) == 0:
                         return
 
+                    with self.lock:
+                        if self._active_test_id != test_id:
+                            return
+
                     audio = indata[:, 0] if indata.ndim > 1 else indata
                     audio_int = (audio * 32768).astype(np.float32)
 
                     with self.lock:
+                        if self._active_test_id != test_id:
+                            return
                         self.level_queue.append(audio_int.copy())
                         self.audio_buffer.append(audio_int.copy())
 
@@ -306,28 +326,31 @@ class AudioEngine:
                     time.sleep(playback_duration + 0.5)
                     time.sleep(0.5)
 
+                    with self.lock:
+                        if self._active_test_id == test_id:
+                            self.finished = True
+
                     print("[AudioEngine] Playback finished")
-                    self.finished = True
 
                 except Exception as e:
                     print(f"[Error] Playback wait interrupted: {e}")
-                    self.finished = True
+                    with self.lock:
+                        if self._active_test_id == test_id:
+                            self.finished = True
 
-            self.playback_thread = threading.Thread(
-                target=wait_for_playback, daemon=True
-            )
+            self.playback_thread = threading.Thread(target=wait_for_playback, daemon=True)
             self.playback_thread.start()
 
         except Exception as e:
             print(f"[Error] Failed to start dual test: {e}")
             traceback.print_exc()
-            self.stop_all_streams()
+            self.stop_all_streams(session_token=test_id)
             self.finished = True
 
     def close(self): # 釋放串流資源
         self.stop_all_streams()
 
-    def refresh_device_cache(self): # 重設 PortAudio 驅動層並刷新裝置快取
+    def refresh_device_cache(self): # 重設 PortAudio
         try:
             self.stop_all_streams()
             sd._terminate()

@@ -1,18 +1,19 @@
-# dialogs.py 彈出視窗模組
-
+# dialogs.py
 import time
 import traceback
+import uuid
+
 import sounddevice as sd
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QDialog, QLabel, QMessageBox, QPushButton, QVBoxLayout
 
 import utils
+from audio_engine import AudioEngine
 from ui.widgets import WaveformWidget
 
 
-class BaseTestDialog(QDialog): #彈出視窗基底類別
-
+class BaseTestDialog(QDialog): #彈出視窗類別
     def __init__(
         self,
         audio,
@@ -28,11 +29,15 @@ class BaseTestDialog(QDialog): #彈出視窗基底類別
         parent=None,
     ):
         super().__init__(parent)
-        self.audio = audio
+
+        # 每個 dialog 保持自己的 engine
+        self.audio = audio if audio is not None else AudioEngine()
+
         self.in_dev = in_dev
         self.out_dev = out_dev
         self.wav_path = wav_path
         self.test_count = 0
+        self.test_session_id = uuid.uuid4().hex
 
         self.setWindowTitle(title_text)
         self.setFixedSize(700, window_height)
@@ -45,8 +50,7 @@ class BaseTestDialog(QDialog): #彈出視窗基底類別
         title.setStyleSheet("font-size:28px; font-weight:700; color:#63e6ff;")
         layout.addWidget(title)
 
-        # Track 1 波形圖
-        layout.addWidget(QLabel(track1_label))
+        layout.addWidget(QLabel(track1_label)) # Track 1 波形圖
         self.track1 = WaveformWidget(
             duration_seconds=5 if "limiter" not in track1_type else 3,
             sample_rate=48000,
@@ -55,8 +59,7 @@ class BaseTestDialog(QDialog): #彈出視窗基底類別
         self.track1.setMinimumHeight(100)
         layout.addWidget(self.track1)
 
-        # Track 2 波形圖
-        layout.addWidget(QLabel(track2_label))
+        layout.addWidget(QLabel(track2_label)) # Track 2 波形圖
         self.track2 = WaveformWidget(
             duration_seconds=5 if "limiter" not in track2_type else 3,
             sample_rate=48000,
@@ -80,7 +83,7 @@ class BaseTestDialog(QDialog): #彈出視窗基底類別
 
         self.start_btn.clicked.connect(self.run_test_flow)
 
-    def run_test_flow(self): #第一階段測試流程
+    def run_test_flow(self): #第一輪test run
         if self.timer.isActive():
             return
 
@@ -103,14 +106,18 @@ class BaseTestDialog(QDialog): #彈出視窗基底類別
         self.track1.start_recording(audio_start_index=0)
 
         self.audio.start_dual_test(
-            self.in_dev["id"], self.out_dev["id"], data, 1
+            self.in_dev["id"],
+            self.out_dev["id"],
+            data,
+            1,
+            session_token=self.test_session_id,
         )
         self.timer.start(30)
 
     def first_done(self):
         QTimer.singleShot(0, self.show_continue)
 
-    def show_continue(self): # 顯示第一階段完成對話框
+    def show_continue(self): # 第一輪完成提示
         msg = QMessageBox(self)
         msg.setWindowTitle("Continue")
         msg.setText("First record finished. Continue?")
@@ -119,11 +126,11 @@ class BaseTestDialog(QDialog): #彈出視窗基底類別
         if msg.exec() == QMessageBox.StandardButton.Ok:
             QTimer.singleShot(300, self.run_second)
 
-    def run_second(self): # 觸發第二階段對比測試流程
+    def run_second(self): #第二輪test run
         self.test_count = 2
         delay_samples = int(0.3 * 48000)
 
-        self.audio.stop_all_streams()
+        self.audio.stop_all_streams(self.test_session_id)
         time.sleep(0.3)
 
         self.audio.finished = False
@@ -142,17 +149,19 @@ class BaseTestDialog(QDialog): #彈出視窗基底類別
             self.start_btn.setEnabled(True)
             return
 
-        print(f"[Dialog] Second test audio data size: {len(data)} bytes")
-
         self.audio.start_dual_test(
-            self.in_dev["id"], self.out_dev["id"], data, 1
+            self.in_dev["id"],
+            self.out_dev["id"],
+            data,
+            1,
+            session_token=self.test_session_id,
         )
         self.timer.start(30)
 
     def test_finished(self):
         QTimer.singleShot(0, self.show_finish_dialog)
 
-    def show_finish_dialog(self): # 顯示全流程測試完成對話框
+    def show_finish_dialog(self): # 第二輪完成提示
         msg = QMessageBox(self)
         msg.setWindowTitle("Recording Complete")
         msg.setText("Recording finished successfully!")
@@ -160,7 +169,7 @@ class BaseTestDialog(QDialog): #彈出視窗基底類別
         msg.exec()
         self.start_btn.setEnabled(True)
 
-    def poll_audio(self): # 輪詢音訊佇列並更新對應軌道數據
+    def poll_audio(self):
         with self.audio.lock:
             while self.audio.level_queue:
                 chunk = self.audio.level_queue.popleft()
@@ -176,7 +185,7 @@ class BaseTestDialog(QDialog): #彈出視窗基底類別
             else:
                 self.track2.stop_recording()
 
-            self.audio.stop_all_streams()
+            self.audio.stop_all_streams(self.test_session_id)
             self.audio.finished = False
 
             if self.test_count == 1:
@@ -184,12 +193,13 @@ class BaseTestDialog(QDialog): #彈出視窗基底類別
             else:
                 self.test_finished()
 
-    def closeEvent(self, event): # 視窗關閉重置狀態與音訊串流
+    def closeEvent(self, event): # 視窗關閉重置狀態
         try:
             print(f"[Dialog] {self.windowTitle()} closing, resetting audio engine...")
             if self.timer.isActive():
                 self.timer.stop()
-            self.audio.stop_all_streams()
+
+            self.audio.stop_all_streams(self.test_session_id)
 
             self.audio.finished = False
             self.audio.noise_floor = None
@@ -207,8 +217,7 @@ class BaseTestDialog(QDialog): #彈出視窗基底類別
         event.accept()
 
 
-class AINRDialog(BaseTestDialog): # AINR測試視窗
-
+class AINRDialog(BaseTestDialog):
     def __init__(self, audio, in_dev, out_dev, parent=None):
         super().__init__(
             audio=audio,
@@ -223,8 +232,7 @@ class AINRDialog(BaseTestDialog): # AINR測試視窗
         )
 
 
-class CompressorDialog(BaseTestDialog): #Compressor測試視窗
-
+class CompressorDialog(BaseTestDialog):
     def __init__(self, audio, in_dev, out_dev, parent=None):
         super().__init__(
             audio=audio,
@@ -239,8 +247,7 @@ class CompressorDialog(BaseTestDialog): #Compressor測試視窗
         )
 
 
-class LimiterDialog(BaseTestDialog): # Limiter測試視窗
-
+class LimiterDialog(BaseTestDialog):
     def __init__(self, audio, in_dev, out_dev, parent=None):
         super().__init__(
             audio=audio,

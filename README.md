@@ -37,18 +37,12 @@ Currently, the software supports testing for the following effects:
 <details>
 <summary>Click to expand version history</summary>
 
-### **v1.0.2**
-**Fixed:**
-- Fixed some issues that could cause crashes during certain operations.
-
-<br>
-
 ### **v1.0.1**
 **Added:**
 - output volume adjustment to minimize testing bias from low volume.
 
 **Fixed:**
-- Fixed issue where progress persists when restarting a canceled recording.
+- Fix issue where progress persists when restarting a canceled recording.
 
 <br>
 
@@ -58,11 +52,12 @@ Initial release.
 
 <br>
 <br>
+<br>
     
 ## **How to use**
 
 **1. Launch the Application**<br>
-Download and open the "Mic_Effect_Tester.exe" to start the program.
+Double-click Mic_Effect_Tester.exe to start the program.
 
 **2. Select Input Device**<br>
 Click "Select Input Endpoint" and double-click the microphone device you wish to test from the drop-down menu.
@@ -81,13 +76,3 @@ Switch the effect setting on  software toggle, then click "OK" in the prompt win
 
 **7. Compare Results**<br>
 Analyze the visual waveforms of the recorded tracks to verify whether the effect has been successfully applied.
-
-<br>
-
-## **Architecture diagram**
-<details>
-<summary>Click to view the architecture diagram</summary>
-  
-<img width="639" height="1563" alt="Mic effect tester" src="https://github.com/user-attachments/assets/2399b215-955a-44d2-a576-3085367f007f" />
-
-</details>

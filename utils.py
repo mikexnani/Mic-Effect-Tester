@@ -10,15 +10,13 @@ def resource_path(relative_path): # 取得相對路徑
     return os.path.join(os.path.abspath("."), relative_path)
 
 
-# 資源檔案路徑配置
+# 資源路徑
 AINRwav_path = resource_path(os.path.join("resources", "AINR_Test.wav"))
 Limiterwav_path = resource_path(os.path.join("resources", "Limiter_Test.wav"))
-Compressorwav_path = resource_path(
-    os.path.join("resources", "Compressor_Test.wav")
-)
+Compressorwav_path = resource_path(os.path.join("resources", "Compressor_Test.wav"))
 
 
-def check_resources(): # 驗證必要資源檔案是否存在且可讀取
+def check_resources(): # 檢查資源
     missing_files = []
     for p in [AINRwav_path, Limiterwav_path, Compressorwav_path]:
         if not os.path.exists(p):
@@ -55,7 +53,7 @@ def check_resources(): # 驗證必要資源檔案是否存在且可讀取
         sys.exit(1)
 
 
-def load_audio_file(wav_path): #讀取WAV，雙聲道轉為單聲道
+def load_audio_file(wav_path): #讀WAV，轉為單聲道
     try:
         with wave.open(wav_path) as wf:
             data = wf.readframes(wf.getnframes())
