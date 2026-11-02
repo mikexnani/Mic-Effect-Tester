@@ -33,26 +33,6 @@ Currently, the software supports testing for the following effects:
 <br>
 <br>
 
-## **Changelog**
-<details>
-<summary>Click to expand version history</summary>
-
-### **v1.0.1**
-**Added:**
-- output volume adjustment to minimize testing bias from low volume.
-
-**Fixed:**
-- Fix issue where progress persists when restarting a canceled recording.
-
-<br>
-
-### **v1.0.0**
-Initial release.
-</details>
-
-<br>
-<br>
-<br>
     
 ## **How to use**
 
