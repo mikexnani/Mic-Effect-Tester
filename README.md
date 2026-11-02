@@ -1,4 +1,4 @@
-# **Mic-Effect-Tester**
+# **Mic Effect Tester**
 
 ## **Overview**  
 
