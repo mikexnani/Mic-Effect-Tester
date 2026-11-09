@@ -34,10 +34,10 @@ Currently, the software supports testing for the following effects:
 <br>
 
 
-## **Flow diagram**
+## **Flow Diagram**
 <details>
 
-<img width="60%" alt="My First Board_page-0001 (1)" src="https://github.com/user-attachments/assets/6e972fe7-4aa5-41ff-a6f1-e01a7078fc38" />
+<img width="60%" height="90%" alt="Flow diagram*" src="https://github.com/user-attachments/assets/6e972fe7-4aa5-41ff-a6f1-e01a7078fc38" />
 
 
 </details>
