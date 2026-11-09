@@ -33,6 +33,18 @@ Currently, the software supports testing for the following effects:
 <br>
 <br>
 
+<details>
+<summary>點擊這裡展開/收起內容</summary>
+
+這裡放你想隱藏的詳細文字、圖片或程式碼區塊。
+支援一般的 Markdown 語法：
+- 項目符號 1
+- 項目符號 2
+
+</details>
+
+<br>
+<br>
     
 ## **How to use**
 
